@@ -1,0 +1,18 @@
+cache:
+  key: "$CI_PIPELINE_ID"
+  paths:
+    - build
+
+
+stages:
+  - build_lib
+
+build:
+  stage: build_lib
+  tags:
+    - cpp
+  script:
+    - mkdir build
+    - cd build
+    - cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=/usr/bin/clang-9 -DCMAKE_CXX_COMPILER=/usr/bin/clang++-9
+    - cmake --build . -- -j 4
