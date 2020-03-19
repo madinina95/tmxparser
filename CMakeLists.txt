@@ -4,6 +4,7 @@ project(tmxparser)
 
 include(GNUInstallDirs)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake/modules)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake ${CMAKE_MODULE_PATH})
 
 set(TMXPARSER_VERSION_MAJOR 2)
@@ -20,14 +21,17 @@ configure_file(
 
 option(USE_MINIZ  "Use miniz.c instead of zlib (default: OFF)" OFF)
 option(BUILD_SHARED_LIBS "Build shared libs, otherwise static libs. (default: ON)" ON)
-option(BUILD_TINYXML2  "Build tinyxml2 as external project (default: OFF)" OFF)
-option(BUILD_TESTS  "Build tests. (default: OFF)" OFF)
+option(BUILD_TESTS  "Build tests. (default: OFF)" ON)
 option(BUILD_DOCS  "Build documentation. (default: OFF)" OFF)
 
-#Dependencies Settings
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/deps.cmake)
-
-find_package(tinyxml2 REQUIRED)
+# tinyxml2
+find_package(TinyXML2 REQUIRED)
+if(TINYXML2_FOUND)
+  set( ${TINYXML2_LIBRARIES})
+  include_directories(${TINYXML2_INCLUDE_DIR})
+else()
+  message(STATUS "TinyXml2 not found")
+endif()
 
 if(NOT USE_MINIZ)
   find_package(ZLIB) #<-- build it as external project?
@@ -115,7 +119,7 @@ target_compile_features(tmxparser
   PRIVATE cxx_std_11)
 
 target_link_libraries(tmxparser
-  PRIVATE tinyxml2)
+  PRIVATE ${TINYXML2_LIBRARIES})
 
 if(NOT USE_MINIZ)
   target_link_libraries(tmxparser
@@ -169,7 +173,7 @@ if(BUILD_TESTS)
           PRIVATE -g)
   target_compile_features(run_tests
           PRIVATE cxx_std_11)
-  target_link_libraries(run_tests tmxparser tinyxml2)
+  target_link_libraries(run_tests tmxparser ${TINYXML2_LIBRARIES})
   file(COPY test/example
        DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 endif()
